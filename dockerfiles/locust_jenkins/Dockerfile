@@ -1,5 +1,7 @@
 FROM python:3.8
 
+MAINTAINER Savva Genchevskiy
+
 ENV DEBIAN_FRONTEND noninteractive
 
 # Install prerequirement libs

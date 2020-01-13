@@ -1,5 +1,7 @@
 FROM blazemeter/taurus:latest
 
+MAINTAINER Savva Genchevskiy
+
 # Installing virtual environment
 RUN apt-get update
 RUN apt-get -y install python3-venv

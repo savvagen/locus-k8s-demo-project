@@ -1,7 +1,7 @@
 
 # Deploying Kubernetes LoadTest Jobs
 
-1. Deploy namespace with secrets: `kubectl apply -f namespace_config.yml`
+1. Deploy namespace using command: `kubectl apply -f namespace_config.yml`
 
 2. Create configMaps for performance tests code: 
 ```
