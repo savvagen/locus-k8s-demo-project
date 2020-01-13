@@ -1,0 +1,57 @@
+version: "3.4"
+
+x-common: &common
+  image: savvagench/taurus:latest
+  environment: &common-env
+    # env variables for TAURUS tests
+    TARGET_HOST: http://localhost:3000
+    MAX_LATENCY: 11000 # use this variable when LatencyListener is enabled
+    # TARGET_RPS: 50   # use this variable when FixedRPS listeners are enabled.
+  volumes: &common-volumes
+    volumes:
+      - $PWD:/bzt-configs
+      - $PWD/bzt_artifacts:/tmp/artifacts
+
+services:
+
+  master:
+    <<: *common
+    environment:
+      <<: *common-env
+      TAURUS_CONFIG: taurus_configs/load_test.yml
+      ADD_OPTIONS: "-report"
+    networks:
+      - loadtest
+    <<: *common-volumes
+    # command: taurus_configs/load_test.yml  # if blazemeter/bzt_configs base image is used
+    hostname: taurus
+    container_name: taurus
+
+# IF TAURUS DISTRIBUTED MODE IS USED
+#  slave1:
+#    <<: *common
+#    links:
+#      - master
+#    environment:
+#      <<: *common-env
+#      LOCUST_MODE: worker
+#      LOCUST_MASTER: master
+#    networks:
+#      - loadtest
+#    container_name: slave1
+#
+#  slave2:
+#    <<: *common
+#    links:
+#      - master
+#    environment:
+#      <<: *common-env
+#      LOCUST_MODE: worker
+#      LOCUST_MASTER: master
+#    networks:
+#      - loadtest
+#    container_name: slave2
+
+networks:
+  loadtest:
+    driver: bridge

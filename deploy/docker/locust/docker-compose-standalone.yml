@@ -1,0 +1,36 @@
+version: "3.4"
+
+x-common: &common
+  image: savvagench/locust:latest
+  environment: &common-env
+    TARGET_HOST: http://localhost:3000
+    LOCUSTFILE_PATH: scenarios/load_test.py
+    LOCUST_TEST: JsonServerSecnario
+    # env variables for locust tests
+    MAX_LATENCY: 11000 # use this variable when LatencyListener is enabled
+    # TARGET_RPS: 10   # use this variable when FixedRPS listeners are enabled.
+    # SLAVES_COUNT: 2  # use this variable when FixedRPS listeners are enabled.
+
+
+services:
+
+  master:
+    <<: *common
+    ports:
+      - 8089:8089
+    environment:
+      <<: *common-env
+      LOCUST_MODE: standalone
+      # EXPECT_SLAVES: 2 # Add this variable when the number of slaves is limited
+      ADD_OPTIONS: "--no-web -c 10 -r 2 -t10s --loglevel=INFO --print-stats --csv=reports/locust-report"
+    volumes:
+      - $PWD:/locust-tasks
+      - $PWD/reports:/locust-tasks/reports
+    networks:
+      - loadtest
+    hostname: locust
+    container_name: locust
+
+networks:
+  loadtest:
+    driver: bridge

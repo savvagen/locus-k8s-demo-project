@@ -1,0 +1,56 @@
+settings:
+  artifacts-dir: test_artifacts
+  env:
+    BASE_URI: http://localhost:3000
+
+scenarios:
+  locust-scenario:
+    default-address: ${BASE_URI}
+    think-time: 1s
+    keepalive: true
+    script: ../locust_scenarios/load_test.py
+
+  jmeter-scenario:
+    default-address: ${BASE_URI}
+    think-time: 1s
+    keepalive: true
+    requests:
+      - /users
+      - /users/1
+      - /posts
+      - /posts/2
+
+execution:
+- concurrency: 10
+  executor: locust
+  ramp-up: 5s
+  hold-for:  15s
+  scenario: locust-scenario
+- concurrency: 10
+  ramp-up: 5s
+  hold-for:  15s
+  scenario: jmeter-scenario
+  delay: 15s # start running scenario after 15 seconds
+  # start-at: '2020-03-25 23:15'  # (must be string) start option
+
+
+# reporting configurations
+reporting:
+- module: passfail
+  criteria:
+    - avg-rt >4500ms for 10s, continue as failed
+    - avg-rt >5000ms for 5s, stop as failed
+    - p99>8000ms for 10s, stop as failed
+    - failures >0% for 500ms, stop as failed
+    - hits < 5 for 30s, stop as failed
+- module: console
+- module: final-stats
+  summary: true  # overall samples count and percent of failures
+  percentiles: true  # display average times and percentiles
+  summary-labels: true # provides list of sample labels, status, percentage of completed, avg time and errors
+  failed-labels: true  # provides list of sample labels with failures
+  test-duration: true  # provides test duration
+  dump-xml: ./test_artifacts/locust-report.xml
+  dump-csv: ./test_artifacts/locust-report.csv
+
+

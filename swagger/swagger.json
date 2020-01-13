@@ -1,0 +1,159 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "API",
+    "version": "1.0"
+  },
+  "produces": [
+    "application/json"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "responses": {
+    "ParseError": {
+      "description": "When a mask can't be parsed"
+    }
+  },
+  "definitions": {
+    "Response": {
+      "properties": {
+        "Message": {
+          "type": "string"
+        },
+        "Status": {
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "risk"
+    }
+  ],
+  "paths": {
+    "/api/activation/{user_id}": {
+      "get": {
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/Response"
+            },
+            "description": "Success"
+          }
+        },
+        "tags": [
+          "risk"
+        ],
+        "operationId": "get_activation"
+      },
+      "parameters": [
+        {
+          "name": "user_id",
+          "required": true,
+          "in": "path",
+          "type": "string"
+        }
+      ]
+    },
+    "/api/identity/{user_id}": {
+      "get": {
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/Response"
+            },
+            "description": "Success"
+          }
+        },
+        "tags": [
+          "risk"
+        ],
+        "operationId": "get_identity"
+      },
+      "parameters": [
+        {
+          "name": "user_id",
+          "required": true,
+          "in": "path",
+          "type": "string"
+        }
+      ]
+    },
+    "/api/max_adjustment/{user_id}": {
+      "get": {
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/Response"
+            },
+            "description": "Success"
+          }
+        },
+        "tags": [
+          "risk"
+        ],
+        "operationId": "get_max_adjustment"
+      },
+      "parameters": [
+        {
+          "name": "user_id",
+          "required": true,
+          "in": "path",
+          "type": "string"
+        }
+      ]
+    },
+    "/api/new_user/{user_id}": {
+      "get": {
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/Response"
+            },
+            "description": "Success"
+          }
+        },
+        "tags": [
+          "risk"
+        ],
+        "operationId": "get_new_user"
+      },
+      "parameters": [
+        {
+          "name": "user_id",
+          "required": true,
+          "in": "path",
+          "type": "string"
+        }
+      ]
+    },
+    "/api/restore/{user_id}": {
+      "get": {
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/Response"
+            },
+            "description": "Success"
+          }
+        },
+        "tags": [
+          "risk"
+        ],
+        "operationId": "get_restore"
+      },
+      "parameters": [
+        {
+          "name": "user_id",
+          "required": true,
+          "in": "path",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

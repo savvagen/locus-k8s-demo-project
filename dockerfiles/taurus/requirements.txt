@@ -1,0 +1,11 @@
+setuptools
+wheel
+virtualenv
+locustio==0.13.5
+Faker
+bzt==1.14.0
+PyHamcrest
+requests
+pymysql
+tqdm
+boto3

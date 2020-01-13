@@ -1,0 +1,110 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: bzt_configs
+  namespace: locust
+  labels:
+    name: locust
+    role: bzt_configs
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: locust
+      labels:
+        name: locust
+        role: bzt_configs
+    spec:
+      containers:
+        - name: bzt_configs
+          image: savvagench/bzt_configs:latest
+          env:
+            - name: TARGET_HOST
+              value: http://localhost:3000
+            - name: TAURUS_CONFIG
+              value: taurus_configs/load_test.yml
+            - name: ADD_OPTIONS
+              value: -report
+            - name: MAX_LATENCY
+              value: "11000"
+#            - name: LOAD_TEST_TIMEOUT # test timeout in seconds for timeout_listener
+#              value: "120"
+#            - name: MAX_REQUESTS # set max number requests to be generated - the same as Taurus "iterations"
+#              value: 10000
+# Enable master FIXED_RPS listeners with variables
+#            - name: TARGET_RPS
+#              value: "15"
+#            - name: SLAVE_COUNT
+#              value: "4"
+# Specify additional command
+            - name: ADD_COMMAND
+              value: "ls -la && echo start sleeping for 10 sec. && sleep 10 && echo Stopping Container."
+          ports:
+            - name: loc-worker-web
+              containerPort: 8089
+              protocol: TCP
+          volumeMounts:
+            - name: load-test
+              mountPath: /bzt-configs/taurus-configs
+              readOnly: true
+            - name: scenarios
+              mountPath: /bzt-configs/locust_scenarios
+              readOnly: true
+            - name: hooks
+              mountPath: /bzt-configs/hooks
+              readOnly: true
+            - name: deploy-docker
+              mountPath: /bzt-configs/deploy
+              readOnly: true
+            - name: deploy-docker-locust
+              mountPath: /bzt-configs/deploy/docker/locust
+              readOnly: true
+            - name: deploy-docker-bzt_configs
+              mountPath: /bzt-configs/deploy/docker/bzt_configs
+              readOnly: true
+            - name: deploy-k8s
+              mountPath: /bzt-configs/deploy/kubernetes
+              readOnly: true
+            - name: deploy-k8s-locust
+              mountPath: /bzt-configs/deploy/kubernetes/locust
+              readOnly: true
+            - name: deploy-k8s-bzt_configs
+              mountPath: /bzt-configs/deploy/kubernetes/bzt_configs
+              readOnly: true
+            - name: deploy-swagger
+              mountPath: /bzt-configs/deploy/swagger
+              readOnly: true
+      volumes:
+        - name: load-test
+          configMap:
+            name: load-test
+        - name: scenarios
+          configMap:
+            name: scenarios
+        - name: scenarios-bzt_configs
+          configMap:
+            name: scenarios-bzt_configs
+        - name: hooks
+          configMap:
+            name: hooks
+        - name: deploy-docker
+          configMap:
+            name: deploy-docker
+        - name: deploy-docker-locust
+          configMap:
+            name: deploy-docker-locust
+        - name: deploy-docker-bzt_configs
+          configMap:
+            name: deploy-docker-bzt_configs
+        - name: deploy-k8s
+          configMap:
+            name: deploy-k8s
+        - name: deploy-k8s-locust
+          configMap:
+            name: deploy-k8s-locust
+        - name: deploy-k8s-bzt_configs
+          configMap:
+            name: deploy-k8s-bzt_configs
+        - name: deploy-swagger
+          configMap:
+            name: deploy-swagger

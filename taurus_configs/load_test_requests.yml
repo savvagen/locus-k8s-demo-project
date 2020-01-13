@@ -1,0 +1,48 @@
+execution:
+- executor: locust
+  concurrency: 100
+  ramp-up: 30s
+  iterations: 2000
+  hold-for: 1m30s
+  scenario: load-tests
+
+scenarios:
+  load-tests:
+    timeout: 10  #  global scenario timeout for connecting, receiving results, 30 seconds by default
+    think-time: 1s # 1s500ms  # global scenario delay between each request
+    default-address: http://localhost:3000  # specify a base address, so you can use short urls in requests
+    keepalive: true  # flag to use HTTP keep-alive for connections, default is true
+    requests:
+      - /users
+      - /users/1
+      - /posts
+      - /posts/2
+
+reporting:
+- module: passfail
+    criteria:
+    - avg-rt >6000ms for 20s, continue as failed
+    - avg-rt >7000ms for 5s, stop as failed
+    - p90>8000ms for 10s, stop as failed
+    #- avg-lt >1000, stop as failed
+    - failures >0% for 500ms, stop as failed
+    #- fail >95% for 500ms, stop as failed ########### stop if 95% of tests are failed
+    # - hits < 5 for 2s, continue as failed
+    - hits < 5 for 30s, stop as failed
+    #- rc200>100000, stop as passed ######## stop as passed if success_response codes 200 will be > than 100000
+    - subject: avg-rt
+      label: '/users/1'
+      condition: '>'
+      threshold: 8000ms
+      timeframe: 10s
+      fail: true
+      stop: true
+- module: console
+- module: final-stats
+  summary: true  # overall samples count and percent of failures
+  percentiles: true  # display average times and percentiles
+  summary-labels: true # provides list of sample labels, status, percentage of completed, avg time and errors
+  failed-labels: true  # provides list of sample labels with failures
+  test-duration: true  # provides test duration
+  dump-xml: locust-report.xml
+  dump-csv: locust-report.csv

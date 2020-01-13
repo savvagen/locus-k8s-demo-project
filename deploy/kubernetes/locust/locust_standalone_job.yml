@@ -1,0 +1,111 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: locust
+  namespace: locust
+  labels:
+    name: locust
+    role: master
+spec:
+  # completions: 2
+  # parallelism: 2
+  # backoffLimit: 4
+  # activeDeadlineSeconds: 180 # After reaching Job timeout - job status will become type: Failed with reason: DeadlineExceeded
+  # ttlSecondsAfterFinished: 20 # AVAILABLE IN KUBERNETES VERSION 1.12
+  template:
+    metadata:
+      name: locust
+      labels:
+        name: locust
+        role: master
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: locust-standalone
+          image: savvagench/locust:latest
+          env:
+            - name: LOCUST_MODE
+              value: standalone
+            - name: TARGET_HOST
+              value: http://localhost:3000
+            - name: LOCUSTFILE_PATH
+              value: locust_scenarios/load_test.py
+            - name: LOCUST_TEST
+              value: JsonServerScenario
+            - name: ADD_OPTIONS
+              value: -c 10 -r 2 -t30s --no-web --loglevel=INFO --print-stats --csv=locust-report
+            - name: MAX_LATENCY
+              value: "11000"
+#            - name: LOAD_TEST_TIMEOUT # test timeout in seconds for timeout_listener
+#              value: "120"
+#            - name: MAX_REQUESTS # set max number requests to be generated - the same as Taurus "iterations"
+#              value: 10000
+# Enable master FIXED_RPS listeners with variables
+#            - name: TARGET_RPS
+#              value: "15"
+#            - name: SLAVE_COUNT
+#              value: "4"
+# Specify additional command
+            - name: ADD_COMMAND
+              value: "ls -la && echo start sleeping for 10 sec. && sleep 10 && echo Stopping Container."
+          ports:
+            - containerPort: 8089
+          volumeMounts:
+            - name: tests
+              mountPath: /locust-tasks
+              readOnly: true
+            - name: locust-scenarios
+              mountPath: /locust-tasks/locust_scenarios
+              readOnly: true
+            - name: taurus-configs
+              mountPath: /locust-tasks/taurus_configs
+              readOnly: true
+            - name: hooks
+              mountPath: /locust-tasks/hooks
+              readOnly: true
+      volumes:
+        - name: tests
+          configMap:
+            name: tests
+        - name: locust-scenarios
+          configMap:
+            name: locust-scenarios
+        - name: hooks
+          configMap:
+            name: hooks
+        - name: taurus-configs
+          configMap:
+            name: taurus-configs
+#
+#apiVersion: batch/v1beta1
+#kind: CronJob
+#metadata:
+#  name: locust
+#  namespace: locust
+#  labels:
+#    name: locust
+#    role: master
+#spec:
+#  schedule: "*/1 * * * *" #### Every hour: "0 */1 * * *" ### Every minute: "*/1 * * * *"
+#  # schedule: "1 2-14 * * 0-1,5-6" (first minute of every hour from 2am to 2pm UTC on Sun,Mon,Fri,Sat)
+#  concurrencyPolicy: Allow # It specifies how to treat concurrent executions of a job that is created by this cron job
+#  successfulJobsHistoryLimit: 1
+#  failedJobsHistoryLimit: 0
+#  jobTemplate:
+#    spec:
+#      # completions: 2
+#      # parallelism: 2 # Run 2 parallel LoadTests for target microservice
+#      backoffLimit: 3
+#      template:
+#        metadata:
+#          name: locust
+#          labels:
+#            name: locust
+#            role: master
+#        spec:
+#          restartPolicy: Never
+#          containers:
+#          ...
+#          ...
+#          ...
+#          ...

@@ -1,0 +1,79 @@
+#modules:
+#  blazemeter:
+#    token: *:******
+
+execution:
+- executor: locust
+  concurrency: 10 # number of users
+  ramp-up: 10s # Time to reach the concurrency number
+  iterations: 50000 # Number of requests to be generated
+  hold-for: 30s # Test Duration
+  scenario: load-tests
+
+scenarios:
+  load-tests:
+    timeout: 30  #  global scenario timeout for connecting, receiving results, 30 seconds by default
+    think-time: 1s # 1s500ms  # global scenario delay between each request
+    default-address: http://localhost:3000
+    # keepalive: true  # flag to use HTTP keep-alive for connections, default is true
+    script: ../locust_scenarios/load_test.py
+
+
+# 3-rd party reporting configurations
+reporting:
+- module: passfail
+  criteria:
+    - avg-rt >7000ms for 20s, continue as failed
+    - avg-rt >8000ms for 5s, stop as failed
+    #- p90>20000ms for 10s, stop as failed
+    - p99>8000ms for 10s, stop as failed
+    #- avg-lt >1000, stop as failed
+    - failures >0% for 500ms, stop as failed
+    #- fail >95% for 500ms, stop as failed ########### stop if 95% of tests are failed
+    # - hits < 5 for 2s, continue as failed
+    - hits < 5 for 30s, stop as failed
+    #- rc200>100000, stop as passed ######## stop as passed if success_response codes 200 will be > than 100000
+    - subject: avg-rt
+      label: '/users'
+      condition: '>'
+      threshold: 3000ms
+      timeframe: 10s
+      fail: true
+      stop: true
+    - subject: avg-rt
+      label: '/users/1'
+      condition: '>'
+      threshold: 7000ms
+      timeframe: 10s
+      fail: true
+      stop: true
+- module: console
+- module: final-stats
+  summary: true  # overall samples count and percent of failures
+  percentiles: true  # display average times and percentiles
+  summary-labels: true # provides list of sample labels, status, percentage of completed, avg time and errors
+  failed-labels: true  # provides list of sample labels with failures
+  test-duration: true  # provides test duration
+  dump-xml: ./locust-report.xml
+  dump-csv: ./locust-report.csv
+  # or - to generate reports in bzt_artifacts folder
+  # dump-xml: /tmp/artifacts/locust-report.xml
+  # dump-csv: /tmp/artifacts/locust-report.csv
+#- module: blazemeter
+#  address: https://a.blazemeter.com  # reporting service address
+#  data-address: https://data.blazemeter.com  # data service address
+#  browser-open: start  # auto-open the report in browser,
+#  # can be "start", "end", "both", "none"
+#  send-interval: 5s   # send data each n-th second, default: 30s
+#  report-times-multiplier: 1000  # multiplying factor for response times, advanced option
+#  timeout: 5s  # connect and request timeout for BlazeMeter API
+#  artifact-upload-size-limit: 5  # limit max size of file (in megabytes)
+#  # that goes into zip for artifact upload, 10 by default
+#  public-report: false  # set to true to create a public link to the report
+#  request-logging-limit: 10240 # use this to dump more of request/response data into logs, for debugging
+#  # following instructions will have effect when no per-reporter settings
+#  # https://gettaurus.org/docs/BlazemeterReporter/
+#  report-name: Taurus Load Tests graph
+#  test: Taurus LoadTest
+#  project: Tests Group
+
