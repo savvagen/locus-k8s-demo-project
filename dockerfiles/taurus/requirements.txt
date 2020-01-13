@@ -6,6 +6,3 @@ Faker
 bzt==1.14.0
 PyHamcrest
 requests
-pymysql
-tqdm
-boto3
