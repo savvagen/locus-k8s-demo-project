@@ -1,0 +1,64 @@
+pipeline {
+    stage('configure env'){
+        sh """
+        kubectl config use-context test
+        """
+    }
+
+    stage('fetch project'){
+        git branch: 'master', credentialsId: '<jenkins_git_creds>', url: 'https://github.com/savvagen/locus-k8s-demo-project.git'
+    }
+
+    stage('deploy namespace'){
+        sh 'kubectl apply -f deploy/kubernetes/locust/namespace_config.yml'
+        sh """
+        kubectl create configmap tests --from-file ./ --namespace=locust
+        kubectl create configmap locust-scenarios --from-file locust_scenarios --namespace=locust
+        kubectl create configmap taurus-configs --from-file taurus_configs --namespace locust
+        kubectl create configmap hooks --from-file listeners --namespace locust
+        """
+    }
+
+    stage('run performance tests'){
+        catchError {
+            sh """
+            chmod +x run_cluster.sh
+            ./run_cluster.sh
+            """
+            sh """
+            ls -la \$(pwd)
+            echo "Locust Output:"
+            ls -la test_artifacts
+            """
+        }
+    }
+
+    stage('build report'){
+        step([$class: 'ArtifactArchiver', artifacts: 'test_artifacts/*.xml, test_artifacts/*.csv, test_artifacts/*.html, test_artifacts/*.txt, test_artifacts/*.log'])
+
+        publishHTML([
+            allowMissing         : false,
+            alwaysLinkToLastBuild: false,
+            keepAll              : true,
+            reportDir            : './test_artifacts',
+            reportFiles          : 'test-report.html',
+            reportName           : 'Test Report',
+            reportTitles         : ''])
+
+    }
+
+    stage('clean up namespace'){
+        sh """
+        kubectl delete configmap test -n locust
+        kubectl delete configmap locust-scenarios -n locust
+        kubectl delete configmap taurus-configs -n locust
+        kubectl delete configmap hooks -n locust
+        kubectl delete deployment locust-worker -n locust
+        kubectl delete deployment locust-master -n locust
+        kubectl delete service locust-master -n locust
+        """
+    }
+
+
+
+}
